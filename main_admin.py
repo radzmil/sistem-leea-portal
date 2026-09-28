@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["50000 per day", "5000 per hour"],
     storage_uri="memory://"
 )
 
@@ -37,7 +37,7 @@ def index():
     return redirect(url_for('client_login'))
 
 @app.route('/99redballon/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("50 per minute")
 def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -246,7 +246,7 @@ def admin_logout():
     return redirect(url_for('admin_login'))
 
 @app.route('/client/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("500 per minute")
 def client_login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -298,7 +298,8 @@ def client_dashboard():
     
     return render_template('client_dashboard.html', client=client)
 
-@app.route('/api/client/dashboard-stats/<int:client_id>', methods=['GET'])
+# PENTING:  dipulihkan supaya dashboard dapat membaca data khusus setiap klien
+@app.route('/api/client/dashboard-stats/', methods=['GET'])
 def api_client_dashboard_stats(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
@@ -384,7 +385,7 @@ def api_client_dashboard_stats(client_id):
         logging.error(f"Ralat statistik real-data: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/client/analytics-stats/<int:client_id>', methods=['GET'])
+@app.route('/api/client/analytics-stats/', methods=['GET'])
 def api_client_analytics_stats(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
@@ -421,7 +422,7 @@ def api_client_analytics_stats(client_id):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/client/senders/<int:client_id>')
+@app.route('/api/client/senders/')
 def api_get_client_senders(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"error": "Unauthorized"}), 401
@@ -441,7 +442,7 @@ def api_get_client_senders(client_id):
     except Exception:
         return jsonify([])
 
-@app.route('/api/client/chat/<int:client_id>', methods=['GET'])
+@app.route('/api/client/chat/', methods=['GET'])
 def api_get_chat_by_sender(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"error": "Unauthorized"}), 401
@@ -542,7 +543,7 @@ def api_update_admin_phone():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/client/notifications/<int:client_id>', methods=['GET'])
+@app.route('/api/client/notifications/', methods=['GET'])
 def api_get_client_notifications(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify([]), 401

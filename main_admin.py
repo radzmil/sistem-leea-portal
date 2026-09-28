@@ -32,7 +32,6 @@ try:
 except OSError:
     pass
 
-# Auto-Create Tables untuk mengelakkan ralat 500 pada Dashboard
 @app.before_request
 def initialize_db_tables():
     if not getattr(app, '_db_initialized', False):
@@ -331,8 +330,7 @@ def client_dashboard():
     
     return render_template('client_dashboard.html', client=client)
 
-# LALUAN API DENGAN PARAMETER  YANG LENGKAP
-@app.route('/api/client/dashboard-stats/', methods=['GET'])
+@app.route('/api/client/dashboard-stats/<int:client_id>', methods=['GET'])
 def api_client_dashboard_stats(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
@@ -418,7 +416,7 @@ def api_client_dashboard_stats(client_id):
         logging.error(f"Ralat statistik real-data: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/client/analytics-stats/', methods=['GET'])
+@app.route('/api/client/analytics-stats/<int:client_id>', methods=['GET'])
 def api_client_analytics_stats(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
@@ -455,7 +453,7 @@ def api_client_analytics_stats(client_id):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/client/senders/')
+@app.route('/api/client/senders/<int:client_id>', methods=['GET'])
 def api_get_client_senders(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"error": "Unauthorized"}), 401
@@ -475,7 +473,7 @@ def api_get_client_senders(client_id):
     except Exception:
         return jsonify([])
 
-@app.route('/api/client/chat/', methods=['GET'])
+@app.route('/api/client/chat/<int:client_id>', methods=['GET'])
 def api_get_chat_by_sender(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify({"error": "Unauthorized"}), 401
@@ -508,28 +506,35 @@ def api_client_manual_reply():
     
     if not recipient_phone or not message_text:
         return jsonify({"success": False, "error": "Maklumat tidak lengkap"}), 400
-        
+
+    # Setiap client ada bot WhatsApp sendiri (url_server), proksi terus ke bot tersebut supaya token/nombor betul digunakan
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "error": "Ralat sambungan pangkalan data"}), 500
     try:
-        token = os.getenv("WHATSAPP_TOKEN")
-        phone_number_id = os.getenv("PHONE_NUMBER_ID", "1274341599093050")
-        
-        if token:
-            clean_phone = recipient_phone.replace("+", "").strip()
-            url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
-            headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-            payload = {"messaging_product": "whatsapp", "to": clean_phone, "type": "text", "text": {"body": message_text}}
-            requests.post(url, json=payload, headers=headers, timeout=10)
-            
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO messages (client_id, sender, message, timestamp) VALUES (%s, 'Admin', %s, NOW());", (client_id, message_text))
-        conn.commit()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT url_server, nama_syarikat FROM clients WHERE id = %s;", (client_id,))
+        client_row = cursor.fetchone()
         cursor.close()
         conn.close()
-        
-        return jsonify({"success": True, "message": "Balasan berjaya dihantar!"}), 200
+
+        bot_url = (client_row.get('url_server') or '').strip().rstrip('/') if client_row else ''
+        if not bot_url:
+            return jsonify({"success": False, "error": "URL server bot untuk klien ini belum ditetapkan."}), 400
+
+        clean_phone = recipient_phone.replace("+", "").strip()
+        resp = requests.post(
+            f"{bot_url}/api/send-whatsapp",
+            json={"phone": clean_phone, "message": message_text, "client": client_row.get('nama_syarikat', '')},
+            timeout=15
+        )
+        resp_data = resp.json() if resp.content else {}
+
+        if resp.ok and resp_data.get('success'):
+            return jsonify({"success": True, "message": "Balasan berjaya dihantar melalui bot!"}), 200
+        return jsonify({"success": False, "error": resp_data.get('error', 'Bot gagal menghantar mesej')}), 502
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": f"Gagal hubungi server bot: {str(e)}"}), 502
 
 @app.route('/api/client/toggle-mode', methods=['POST'])
 def api_toggle_client_mode():
@@ -552,6 +557,26 @@ def api_toggle_client_mode():
         return jsonify({"success": True, "message": f"Mod ditukar kepada {mode.upper()}!"}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/client/mode/<int:client_id>', methods=['GET'])
+def api_get_client_mode(client_id):
+    if not session.get('client_logged_in') or session.get('client_id') != client_id:
+        return jsonify({"mode": "ai"}), 401
+
+    phone = request.args.get('phone', '').replace("+", "").strip()
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"mode": "ai"}), 200
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("CREATE TABLE IF NOT EXISTS chat_modes (client_id INT, phone VARCHAR(50), mode VARCHAR(20), PRIMARY KEY (client_id, phone));")
+        cursor.execute("SELECT mode FROM chat_modes WHERE client_id = %s AND phone = %s;", (client_id, phone))
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return jsonify({"mode": row['mode'] if row else "ai"}), 200
+    except Exception:
+        return jsonify({"mode": "ai"}), 200
 
 @app.route('/api/client/update-admin-phone', methods=['POST'])
 def api_update_admin_phone():
@@ -576,7 +601,7 @@ def api_update_admin_phone():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/client/notifications/', methods=['GET'])
+@app.route('/api/client/notifications/<int:client_id>', methods=['GET'])
 def api_get_client_notifications(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
         return jsonify([]), 401

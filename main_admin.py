@@ -331,7 +331,7 @@ def client_dashboard():
     
     return render_template('client_dashboard.html', client=client)
 
-# PENTING:  dipulihkan supaya Vercel tidak memulangkan ralat 404 Not Found
+# LALUAN API DENGAN PARAMETER  YANG LENGKAP
 @app.route('/api/client/dashboard-stats/', methods=['GET'])
 def api_client_dashboard_stats(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:
@@ -675,7 +675,6 @@ def client_update_profile():
             
             if is_current_valid:
                 new_hash = generate_password_hash(new_password)
-                # KEMAS KINI PASSWORD_HASH DAN PLAIN_PASSWORD SERENTAK SUPAYA ADMIN BOLEH LIHAT
                 cursor.execute("UPDATE clients SET password_hash = %s, plain_password = %s WHERE id = %s", (new_hash, new_password, client_id))
                 conn.commit()
                 flash("Kata laluan berjaya dikemaskini!", "success")

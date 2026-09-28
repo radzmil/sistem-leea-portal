@@ -428,6 +428,7 @@
                             <th>Token</th>
                             <th>Tarikh Luput</th>
                             <th>Sambungan Zulfa-Bot</th>
+                            <th>Modul Sembang Langsung (URL Bot)</th>
                             <th>Tambah Token</th>
                         </tr>
                     </thead>
@@ -471,6 +472,18 @@
                                     </form>
                                 </td>
                                 <td>
+                                    <!-- Modul Sambungan Bot WhatsApp -> Tab Sembang Langsung Client Dashboard -->
+                                    <form action="{{ url_for('admin_update_server') }}" method="POST" style="display: flex; gap: 5px; align-items: center; margin-bottom: 6px;">
+                                        <input type="hidden" name="client_id" value="{{ client.id }}">
+                                        <input type="text" name="url_server" placeholder="https://bot-klien.onrender.com" value="{{ client.url_server if client.url_server else '' }}" style="width: 160px; padding: 6px; font-size: 11px; font-family: monospace; color: #34d399;" required>
+                                        <button type="submit" class="btn btn-small">Simpan</button>
+                                    </form>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <button type="button" class="btn btn-small" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); font-size: 10px;" onclick="testBotConnection({{ client.id }}, this)">Test Sambungan</button>
+                                        <span id="botStatus-{{ client.id }}" style="font-size: 10px; color: #64748b; font-family: monospace;">Belum diuji</span>
+                                    </div>
+                                </td>
+                                <td>
                                     <form action="{{ url_for('topup_client_tokens') }}" method="POST" style="display: flex; gap: 5px;">
                                         <input type="hidden" name="client_id" value="{{ client.id }}">
                                         <input type="number" name="tokens" placeholder="Jumlah..." style="width: 70px; padding: 6px; font-size: 12px;" required>
@@ -481,7 +494,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="8" class="empty-state">Tiada akaun klien berdaftar seketika ini.</td>
+                                <td colspan="9" class="empty-state">Tiada akaun klien berdaftar seketika ini.</td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -496,6 +509,37 @@
     </div>
 
     <script>
+        // Test sambungan live ke server bot WhatsApp client (proksi melalui backend, elak isu CORS)
+        function testBotConnection(clientId, btn) {
+            const statusEl = document.getElementById(`botStatus-${clientId}`);
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = 'Menguji...';
+            statusEl.style.color = '#64748b';
+            statusEl.innerText = 'Menyemak...';
+
+            fetch(`/admin/client/test-bot/${clientId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.online) {
+                        statusEl.style.color = '#34d399';
+                        statusEl.innerText = `🟢 Online (${data.bot_name || 'Bot'} v${data.version || '-'})`;
+                    } else {
+                        statusEl.style.color = '#ef4444';
+                        statusEl.innerText = `🔴 Offline${data.error ? ': ' + data.error : ''}`;
+                    }
+                })
+                .catch(err => {
+                    statusEl.style.color = '#ef4444';
+                    statusEl.innerText = '🔴 Ralat sambungan';
+                    console.error('Ralat test bot:', err);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                });
+        }
+
         // Fungsi Toggle Pilihan Klien Spesifik
         function toggleClientSelect(val) {
             const specificGroup = document.getElementById('specificClientGroup');

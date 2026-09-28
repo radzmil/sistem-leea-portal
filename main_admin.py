@@ -215,6 +215,58 @@ def admin_update_bot():
     
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/client/update-server', methods=['POST'])
+def admin_update_server():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+
+    client_id = request.form.get('client_id')
+    url_server = (request.form.get('url_server') or '').strip().rstrip('/')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE clients SET url_server = %s WHERE id = %s", (url_server, client_id))
+        conn.commit()
+    except Exception:
+        pass
+
+    cursor.close()
+    conn.close()
+
+    log_admin_activity(session['admin_username'], f"Mengemas kini URL Server bot untuk ID klien: {client_id}")
+    flash("URL Server bot WhatsApp klien berjaya dikemas kini! Tab Sembang Langsung klien kini boleh sambung.", "success")
+
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/client/test-bot/<int:client_id>', methods=['GET'])
+def admin_test_bot_connection(client_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("SELECT url_server FROM clients WHERE id = %s;", (client_id,))
+    client_row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    bot_url = (client_row.get('url_server') or '').strip().rstrip('/') if client_row else ''
+    if not bot_url:
+        return jsonify({"success": False, "online": False, "error": "URL Server belum ditetapkan."}), 200
+
+    try:
+        resp = requests.get(f"{bot_url}/", timeout=8)
+        data = resp.json() if resp.content else {}
+        return jsonify({
+            "success": True,
+            "online": resp.ok and data.get('status') == 'online',
+            "bot_name": data.get('bot_name', ''),
+            "version": data.get('version', '')
+        }), 200
+    except Exception as e:
+        return jsonify({"success": True, "online": False, "error": str(e)}), 200
+
 @app.route('/admin/client/update_business', methods=['POST'])
 def admin_update_business():
     if not session.get('admin_logged_in'):

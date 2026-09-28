@@ -70,7 +70,7 @@ def index():
     return redirect(url_for('client_login'))
 
 @app.route('/99redballon/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("50 per minute")
 def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -331,6 +331,7 @@ def client_dashboard():
     
     return render_template('client_dashboard.html', client=client)
 
+# PENTING:  dipulihkan supaya Vercel tidak memulangkan ralat 404 Not Found
 @app.route('/api/client/dashboard-stats/', methods=['GET'])
 def api_client_dashboard_stats(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:

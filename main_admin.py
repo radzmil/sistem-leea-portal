@@ -32,12 +32,45 @@ try:
 except OSError:
     pass
 
+# Auto-Create Tables untuk mengelakkan ralat 500 pada Dashboard
+@app.before_request
+def initialize_db_tables():
+    if not getattr(app, '_db_initialized', False):
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    client_id INTEGER,
+                    sender VARCHAR(50),
+                    message TEXT,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS admin_notifications (
+                    id SERIAL PRIMARY KEY,
+                    client_id INTEGER,
+                    title VARCHAR(150),
+                    message TEXT,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            conn.commit()
+            cursor.close()
+            conn.close()
+            app._db_initialized = True
+        except Exception as e:
+            logging.error(f"Gagal membina jadual DB: {e}")
+
 @app.route('/')
 def index():
     return redirect(url_for('client_login'))
 
 @app.route('/99redballon/login', methods=['GET', 'POST'])
-@limiter.limit("50 per minute")
+@limiter.limit("5 per minute")
 def admin_login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -298,7 +331,6 @@ def client_dashboard():
     
     return render_template('client_dashboard.html', client=client)
 
-# PENTING:  dipulihkan supaya dashboard dapat membaca data khusus setiap klien
 @app.route('/api/client/dashboard-stats/', methods=['GET'])
 def api_client_dashboard_stats(client_id):
     if not session.get('client_logged_in') or session.get('client_id') != client_id:

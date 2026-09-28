@@ -7,10 +7,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/client_dashboard.css') }}">
 </head>
-<body data-client-id="{{ client.id }}" data-business-type="{{ client.business_type if client.business_type else 'ecommerce' }}">
+<body>
     <div class="dashboard-container">
         <div class="glass-card">
-
+            
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -38,6 +38,10 @@
         </div>
     </div>
 
+    <script>
+        const clientId = "{{ client.id }}";
+        const clientBusinessType = "{{ client.business_type if client.business_type else 'ecommerce' }}";
+    </script>
     <script src="{{ url_for('static', filename='js/client_dashboard.js') }}"></script>
 </body>
 </html>

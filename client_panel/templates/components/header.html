@@ -1,0 +1,51 @@
+<div class="header">
+    <div class="brand-section" onclick="openProfileModal()" title="Klik untuk tetapan profil & penjenamaan">
+        {% if client.logo_path %}
+            {% if client.logo_path.startswith('data:image') %}
+                <img src="{{ client.logo_path }}" alt="Logo Syarikat" class="client-logo">
+            {% else %}
+                <img src="{{ url_for('static', filename=client.logo_path) }}" alt="Logo Syarikat" class="client-logo">
+            {% endif %}
+        {% else %}
+            <div class="client-logo" style="display: flex; align-items: center; justify-content: center; font-size: 18px;">⚡</div>
+        {% endif %}
+        <div>
+            <div class="brand-title">{{ client.nama_syarikat }} ⚙️</div>
+            <div class="brand-subtitle">ID Pengguna: {{ client.username }} • Skop: <span style="color: #38bdf8; text-transform: uppercase;" id="clientBusinessTypeLabel">{{ client.business_type if client.business_type else 'ecommerce' }}</span></div>
+        </div>
+    </div>
+    
+    <div class="header-right">
+        <!-- ICON LOCENG NOTIFIKASI INBOX ADMIN -->
+        <div style="position: relative;">
+            <button type="button" class="notification-bell-btn" onclick="toggleAdminNotifDropdown()" title="Inbox Mesej & Notifikasi Admin">
+                🔔
+                <div class="notification-dot" id="notifRedDot"></div>
+            </button>
+            
+            <!-- POPUP INBOX NOTIFIKASI (Maksimum 15 Mesej) -->
+            <div class="notification-dropdown" id="adminNotifDropdown">
+                <div class="notification-header">
+                    <span>📥 Inbox Notifikasi Admin</span>
+                    <span id="notifCountText" style="color: #94a3b8; font-size: 10px;">0 / 15 Mesej</span>
+                </div>
+                <div class="notification-list" id="adminNotifListContainer">
+                    <div style="color: #64748b; font-size: 11px; text-align: center; padding: 15px;">Tiada notifikasi baharu.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="server-status-wrapper" title="Status Live Server Enterprise">
+            <div class="status-dot" id="serverStatusDot"></div>
+            <span id="serverStatusText" style="color: #64748b;">Enterprise Core: Menyemak...</span>
+        </div>
+        <div>
+            <a href="{{ url_for('client_logout') }}" class="btn-danger">Keluar</a>
+        </div>
+    </div>
+</div>
+
+<div class="tab-nav">
+    <button type="button" class="tab-btn active" id="btn-tab-analisis" onclick="switchTab(event, 'tab-analisis')">📊 Analisis & Automasi</button>
+    <button type="button" class="tab-btn" id="btn-tab-chat" onclick="switchTab(event, 'tab-chat')">💬 Sembang Langsung AI</button>
+</div>

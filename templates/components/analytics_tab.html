@@ -1,0 +1,82 @@
+<div id="tab-analisis" class="tab-content active">
+
+    <div class="live-terminal">
+        <div class="terminal-pulse"></div>
+        <div><strong>STATUS NEURAL AKTIF:</strong> <span id="liveTerminalText">Bot AI sedang memantau pelayan dan menjawab mesej masuk secara autonomi...</span></div>
+    </div>
+
+    <div class="analytics-percentage-grid">
+        <div class="metric-card">
+            <div class="metric-title">Kadar Respons AI Live</div>
+            <div class="metric-main-value" id="valAiRate">99.4%</div>
+            <div class="metric-subtext">⚡ Automasi Penuh</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Pertumbuhan Lead</div>
+            <div class="metric-main-value" id="valConversionPct">+24.8%</div>
+            <div class="metric-subtext" style="color: #38bdf8;">📈 Minggu Ini</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Campur Tangan Manual</div>
+            <div class="metric-main-value" id="valManualPct">0.6%</div>
+            <div class="metric-subtext" style="color: #f59e0b;">⚡ Human Touch</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Sandaran Cloud DB</div>
+            <div class="metric-main-value" id="valStorageStatus">100%</div>
+            <div class="metric-subtext" style="color: #34d399;">🔒 Enterprise Secure</div>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-box">
+            <div class="info-label">Sisa Token AI Semasa</div>
+            <div class="info-value" style="color: #34d399;">{{ client.token_balance }} Token</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">Tarikh Luput Langganan</div>
+            <div class="info-value">{{ client.tarikh_luput }}</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">Nombor WhatsApp Bot</div>
+            <div class="info-value" style="font-size: 15px; font-family: monospace;">{{ client.no_wa_bot }}</div>
+        </div>
+        <div class="info-box" style="border-color: rgba(52, 211, 153, 0.3); background: rgba(16, 185, 129, 0.05);">
+            <div class="info-label" style="color: #34d399;">Anggaran Jualan AI (ROI)</div>
+            <div class="info-value" id="roiSalesValue" style="color: #34d399;">Memuat data...</div>
+        </div>
+    </div>
+
+    <div class="glass-card" style="background: rgba(15, 23, 42, 0.4); margin-bottom: 20px;">
+        <h3 style="font-size: 13px; margin-bottom: 12px; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">🤖 Konfigurasi Enjin Bot AI</h3>
+        <form onsubmit="saveBotProfile(event)">
+            <div class="bot-config-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div>
+                    <label class="info-label">Nama Paparan Bot</label>
+                    <input type="text" id="botName" class="form-input" value="Bot_{{ client.username }}" style="margin-bottom:0;">
+                </div>
+                <div>
+                    <label class="info-label">Model Enjin AI</label>
+                    <input type="text" class="form-input" value="Sistem Leea Enterprise V2.1" disabled style="opacity: 0.7; margin-bottom:0; font-family: monospace;">
+                </div>
+                <div>
+                    <label class="info-label">Kapasiti Storan Awan</label>
+                    <input type="text" class="form-input" value="Unlimited High-Speed Cluster" disabled style="opacity: 0.7; margin-bottom:0; font-family: monospace;">
+                </div>
+            </div>
+            <button type="submit" class="btn-save" style="margin-top: 12px; padding: 7px 14px; font-size: 12px;">Simpan Konfigurasi Bot</button>
+        </form>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-container">
+            <div class="info-label" style="margin-bottom: 8px;">Statistik Mesej Masuk (Harian & Mingguan)</div>
+            <canvas id="msgChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="info-label" style="margin-bottom: 8px;">Prestasi Saluran Prospek & Lead AI</div>
+            <canvas id="leadChart"></canvas>
+        </div>
+    </div>
+
+</div>

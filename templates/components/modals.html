@@ -1,0 +1,50 @@
+<!-- MODAL BACA PENUH MESEJ ADMIN -->
+<div id="readNotifModal" class="modal-overlay">
+    <div class="modal-card">
+        <button type="button" class="modal-close" onclick="closeReadModal()">✕</button>
+        <h3 id="modalNotifTitle" style="font-size: 14px; margin-bottom: 12px; color: #38bdf8; text-transform: uppercase;">Tajuk Notifikasi</h3>
+        <div id="modalNotifTime" style="font-size: 10px; color: #64748b; font-family: monospace; margin-bottom: 12px;">Tarikh/Masa</div>
+        <div id="modalNotifBody" style="font-size: 13px; color: #cbd5e1; line-height: 1.5; background: rgba(15,23,42,0.6); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); max-height: 250px; overflow-y: auto; margin-bottom: 20px;">Kandungan mesej penuh...</div>
+        <div style="display: flex; justify-content: flex-end;">
+            <button type="button" onclick="closeReadModal()" class="btn-save" style="padding: 8px 16px;">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL TETAPAN PROFIL & PENJENAMAAN -->
+<div id="profileModal" class="modal-overlay">
+    <div class="modal-card">
+        <button type="button" class="modal-close" onclick="closeProfileModal()">✕</button>
+        <h3 style="font-size: 14px; margin-bottom: 15px; color: #38bdf8; text-transform: uppercase;">Tetapan Profil & Penjenamaan Korporat</h3>
+
+        <form action="{{ url_for('client_update_profile') }}" method="POST" enctype="multipart/form-data">
+            <div style="margin-bottom: 15px;">
+                <label class="info-label">Muat Naik Logo Korporat Baru (PNG/JPG)</label>
+                <input type="file" name="logo_file" accept="image/*" class="form-input" style="padding: 8px;">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.06); margin: 15px 0;">
+
+            <div style="margin-bottom: 12px;">
+                <label class="info-label">Kata Laluan Semasa (Diperlukan untuk tukar kata laluan)</label>
+                <div style="position: relative;">
+                    <input type="password" id="currentPwdInput" name="current_password" placeholder="••••••••••••" class="form-input" style="padding-right: 40px; margin-bottom: 0;">
+                    <span onclick="togglePasswordVisibility('currentPwdInput', this)" style="position: absolute; right: 12px; top: 12px; cursor: pointer; font-size: 14px; color: #94a3b8;" title="Papar/Sembunyikan Kata Laluan">👁️</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <label class="info-label">Kata Laluan Baru</label>
+                <div style="position: relative;">
+                    <input type="password" id="newPwdInput" name="new_password" placeholder="••••••••••••" class="form-input" style="padding-right: 40px; margin-bottom: 0;">
+                    <span onclick="togglePasswordVisibility('newPwdInput', this)" style="position: absolute; right: 12px; top: 12px; cursor: pointer; font-size: 14px; color: #94a3b8;" title="Papar/Sembunyikan Kata Laluan">👁️</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeProfileModal()" class="btn-action" style="padding: 9px 16px;">Batal</button>
+                <button type="submit" class="btn-save">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>

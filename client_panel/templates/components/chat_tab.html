@@ -1,0 +1,110 @@
+<div class="info-label" style="margin-bottom: 12px;">Pemantauan Sembang Langsung & Analisis Bisnes Semasa</div>
+
+<div class="dynamic-widget-grid" id="dynamicWidgetBoxContainer" style="margin-bottom: 15px;">
+    <div class="widget-box-card">
+        <div class="widget-box-title">Memuat Analisis...</div>
+        <div class="widget-box-value">--</div>
+        <div class="widget-box-sub">Sila tunggu</div>
+    </div>
+</div>
+
+<div class="crm-workspace">
+    
+    <div class="chat-list" id="chatListContainer">
+        <div class="empty-state" style="padding: 20px; font-size: 11px; color: #64748b; text-align: center;">Memuat senarai pelanggan...</div>
+    </div>
+    
+    <div class="chat-room">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div id="chatRoomHeader" style="font-size: 12px; font-weight: 600; color: #38bdf8; font-family: monospace;">
+                Sila pilih nombor di sebelah kiri untuk mula berbual
+            </div>
+            <div class="toggle-container" id="modeToggleWrapper" style="display: none;">
+                <span class="mode-label" id="modeStatusText">SISTEM AI 🟢</span>
+                <label class="switch">
+                    <input type="checkbox" id="modeCheckbox" onchange="toggleChatMode(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessagesContainer">
+            <div class="message incoming" style="background: rgba(15,23,42,0.4); color: #64748b;">Tiada perbualan aktif dipilih.</div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <input type="text" id="manualMsgInput" class="form-input" placeholder="Ketik balasan manual..." style="margin-top: 0; margin-bottom: 0;">
+            <button type="button" onclick="sendManualMessage()" class="btn-save" style="margin-top: 0; padding: 0 14px;">Kirim</button>
+        </div>
+    </div>
+
+    <div class="crm-right-panel" id="crmRightPanel" style="opacity: 0.4; pointer-events: none;">
+        <div>
+            <div class="crm-panel-title">Profil & Nama Pelanggan</div>
+            <div style="font-size: 11px; font-family: monospace; color: #38bdf8; margin-top: 3px;" id="panelPhoneDisplay">-</div>
+        </div>
+
+        <div class="crm-field-group">
+            <label class="info-label">Nama Pelanggan (Simpan Manual)</label>
+            <input type="text" id="clientNameInput" class="form-input" placeholder="Cth: Encik Ahmad" style="margin-bottom: 0;">
+        </div>
+
+        <div class="crm-field-group">
+            <label class="info-label">Status Funnel Semasa</label>
+            <select id="crmStatusSelect" class="crm-select">
+                <option value="tag-baru">🟢 Prospek Baru</option>
+                <option value="tag-nego">🟡 Sedang Nego</option>
+                <option value="tag-pending">🟠 Pending Payment</option>
+                <option value="tag-selesai">🔵 Closed Sale</option>
+                <option value="tag-kiv">🔴 KIV / Senyap</option>
+            </select>
+        </div>
+
+        <div class="crm-field-group">
+            <label class="info-label">Anggaran Nilai Jualan (RM)</label>
+            <input type="text" id="crmValueInput" class="form-input" value="RM 0.00" placeholder="RM 0.00" style="margin-bottom: 0; font-family: monospace;">
+        </div>
+
+        <div class="crm-field-group" style="flex: 1;">
+            <label class="info-label">Nota Peribadi Klien</label>
+            <textarea id="crmNotesInput" class="crm-textarea" placeholder="Tulis nota penting..."></textarea>
+        </div>
+
+        <button type="button" onclick="saveClientProfileData()" class="btn-save" style="width:100%;">Simpan Maklumat Lead</button>
+    </div>
+
+</div>
+
+<div class="system-status-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+    
+    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="info-label" style="color: #38bdf8;">🌐 Meta Cloud API</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+            <span style="font-family: monospace; font-size: 12px; font-weight: bold; color: #34d399;">WEBHOOK CONNECTED</span>
+        </div>
+        <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Penerimaan mesej masuk aktif.</div>
+    </div>
+
+    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="info-label" style="color: #38bdf8;">🤖 Log AI Terkini</div>
+        <div style="font-family: monospace; font-size: 10px; color: #38bdf8; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; line-clamp: 2; -webkit-line-clamp: 2; -webkit-box-orient: vertical;" id="latestAiActionLog">
+            Menunggu respons pertama...
+        </div>
+        <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Autonomi enjin aktif.</div>
+    </div>
+
+    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="info-label" style="color: #38bdf8;">⚡ Latensi Enjin</div>
+        <div style="font-family: monospace; font-size: 14px; font-weight: bold; color: #f8fafc; margin-top: 6px;" id="engineLatencyDisplay">~245 ms</div>
+        <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Kelajuan tindak balas pelayan.</div>
+    </div>
+
+    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="info-label" style="color: #f59e0b; margin-bottom: 4px;">📞 Nombor Admin Bot</div>
+        <div style="display: flex; gap: 6px;">
+            <input type="text" id="adminPhoneInputBox" class="form-input" value="{{ client.no_wa_bot }}" placeholder="Cth: 60132434200" style="margin-bottom: 0; padding: 5px 8px; font-size: 11px;">
+            <button type="button" onclick="updateAdminPhoneTarget()" class="btn-save" style="margin-top: 0; padding: 0 10px; font-size: 11px;">Simpan</button>
+        </div>
+        <div style="font-size: 9px; color: #64748b; margin-top: 4px;">Penerima notifikasi resit bot.</div>
+    </div>
+
+</div>
